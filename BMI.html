@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>BMI</title>
+</head>
+
+<body>
+
+	<input type="text" id="txt">
+	<button id="add">送出</button>
+	<ul id="list"></ul>
+
+	<pre id="pre"></pre>
+
+	<script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-database.js"></script>
+	<script>
+		const firebaseConfig = {
+			apiKey: "AIzaSyA2lRMLmQV8wEjdGkrmgeo9LDH56k8GGu4",
+			authDomain: "practice-node-project.firebaseapp.com",
+			databaseURL: "https://practice-node-project-default-rtdb.firebaseio.com",
+			projectId: "practice-node-project",
+			storageBucket: "practice-node-project.appspot.com",
+			messagingSenderId: "915223865716",
+			appId: "1:915223865716:web:c4c8dd81ac51801923a421",
+			measurementId: "G-QMZFM9GFES"
+		};
+		firebase.initializeApp(firebaseConfig);
+
+		// NOTE 即時呈現資料
+		const ref = firebase.database().ref()
+		ref.on('value', function (snapshot) {
+			const pre = document.querySelector('#pre')
+			pre.textContent = ''
+			pre.textContent = JSON.stringify(snapshot.val(), null, 3)
+		})
+
+		const txt = document.querySelector('#txt')
+		const add = document.querySelector('#add')
+		const list = document.querySelector('#list')
+		const todosRef = firebase.database().ref('todos')
+
+		// NOTE 呈現所有資料
+		todosRef.on('value', function (snapshot) {
+			const todos = snapshot.val()
+			let str = ''
+			for (const key in todos) {
+				str += `<li data-key="${key}">${todos[key].content}</li>`
+			}
+			list.innerHTML = str
+		})
+
+		// NOTE 增加一筆資料
+		add.addEventListener('click', function () {
+			if (!txt.value) return
+			todosRef.push({ content: txt.value.trim() })
+		})
+
+		// NOTE 刪除一筆資料
+		list.addEventListener('click', function (e) {
+			if (e.target.nodeName === 'LI') {
+				todosRef.child(e.target.dataset.key).remove()
+			}
+		})
+
+	</script>
+</body>
+
+</html>
