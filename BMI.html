@@ -10,11 +10,12 @@
 
 <body>
 
-	<input type="text" id="txt">
+	<label for="high">身高</label>
+	<input type="number" id="high">
+	<label for="weight">體重</label>
+	<input type="number" id="weight">
 	<button id="add">送出</button>
 	<ul id="list"></ul>
-
-	<pre id="pre"></pre>
 
 	<script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-database.js"></script>
@@ -31,41 +32,33 @@
 		};
 		firebase.initializeApp(firebaseConfig);
 
-		// NOTE 即時呈現資料
-		const ref = firebase.database().ref()
-		ref.on('value', function (snapshot) {
-			const pre = document.querySelector('#pre')
-			pre.textContent = ''
-			pre.textContent = JSON.stringify(snapshot.val(), null, 3)
-		})
-
-		const txt = document.querySelector('#txt')
+		const high = document.querySelector('#high')
+		const weight = document.querySelector('#weight')
 		const add = document.querySelector('#add')
 		const list = document.querySelector('#list')
-		const todosRef = firebase.database().ref('todos')
+		const BMIsRef = firebase.database().ref('BMIs')
 
-		// NOTE 呈現所有資料
-		todosRef.on('value', function (snapshot) {
-			const todos = snapshot.val()
+		// NOTE get BMIs list
+		BMIsRef.on('value', function (snapshot) {
+			console.log(snapshot.val())
 			let str = ''
-			for (const key in todos) {
-				str += `<li data-key="${key}">${todos[key].content}</li>`
+			for (const key in snapshot.val()) {
+				const data = snapshot.val()[key].content
+				str += `<li data-key="${key}">身高:${data.high} 體重:${data.weight} - <small>${new Date(data.time)}</small></li>`
 			}
 			list.innerHTML = str
 		})
 
-		// NOTE 增加一筆資料
+
+		// NOTE add BMI record
 		add.addEventListener('click', function () {
-			if (!txt.value) return
-			todosRef.push({ content: txt.value.trim() })
+			if (!high.value || !weight.value) return
+			const timestamp = new Date().getTime()
+			BMIsRef.push({ content: { high: high.value, weight: weight.value, time: timestamp } })
 		})
 
-		// NOTE 刪除一筆資料
-		list.addEventListener('click', function (e) {
-			if (e.target.nodeName === 'LI') {
-				todosRef.child(e.target.dataset.key).remove()
-			}
-		})
+		// NOTE delete BMI record
+
 
 	</script>
 </body>
