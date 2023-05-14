@@ -38,13 +38,19 @@
 		const list = document.querySelector('#list')
 		const BMIsRef = firebase.database().ref('BMIs')
 
-		// NOTE get BMIs list
+		// NOTE get BMI list
 		BMIsRef.on('value', function (snapshot) {
-			console.log(snapshot.val())
 			let str = ''
 			for (const key in snapshot.val()) {
 				const data = snapshot.val()[key].content
-				str += `<li data-key="${key}">身高:${data.high} 體重:${data.weight} - <small>${new Date(data.time)}</small></li>`
+				const date = new Date(data.time)
+				str += `<li data-key="${key}">
+									BMI:${data.bmi.toFixed(2)} 
+									身高:${data.high} 
+									體重:${data.weight} 
+									- <small>${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${date.getMinutes()}</small> 
+									<span class='delete'> X </span>
+								</li>`
 			}
 			list.innerHTML = str
 		})
@@ -54,10 +60,15 @@
 		add.addEventListener('click', function () {
 			if (!high.value || !weight.value) return
 			const timestamp = new Date().getTime()
-			BMIsRef.push({ content: { high: high.value, weight: weight.value, time: timestamp } })
+			BMIsRef.push({ content: { bmi: weight.value / Math.pow(high.value / 100, 2), high: high.value, weight: weight.value, time: timestamp } })
 		})
 
 		// NOTE delete BMI record
+		list.addEventListener('click', function (e) {
+			if (e.target.className === 'delete') {
+				BMIsRef.child(e.target.parentNode.dataset.key).remove()
+			}
+		})
 
 
 	</script>
